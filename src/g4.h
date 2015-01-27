@@ -15,7 +15,11 @@ class G4;
 
 
 inline int maximumLength (int numTetrads) {
-    return (numTetrads < 3)  ? 30 : 45;
+  // Note the QGRS Mapper requires the maximum length to be set
+  // externally.  The problem with this is that the 30 was originally
+  // meant to allow GG, and longer motifs should use 45.  This algorithm
+  // uses dynamic assignment of maximum length.
+  return (numTetrads < 3)  ? 30 : 45;
 }
 
 class G4Candidate {
@@ -38,6 +42,15 @@ public:
       this->y3 = y3;
       this->numTetrads = tetrads;
       this->maxLength = maximumLength(this->numTetrads);
+      this->tstring = "";
+      for ( int i = 0; i < tetrads; i++ ) tstring.append("G");
+      string generated_loop1 = "";
+      string generated_loop2 = "";
+      string generated_loop3 = "";
+      for ( int i = 0; i < y1; i++ ) generated_loop1.append("C");
+      for ( int i = 0; i < y2; i++ ) generated_loop2.append("C");
+      for ( int i = 0; i < y3; i++ ) generated_loop3.append("C");
+      this->sequence = tstring + generated_loop1 + tstring + generated_loop2 + tstring + generated_loop3 + tstring;
     }
     short y1 ;
     short y2 ;
@@ -56,8 +69,16 @@ public:
         double gavg = (abs(y1-y2) + abs(y2-y3) + abs(y1-y3))/3.0;
         return floor(gmax() - gavg + gmax() * (numTetrads-2));
     }
+    short score_mapper(short max) {
+        double gavg = (abs(y1-y2) + abs(y2-y3) + abs(y1-y3))/2.0;
+        short gmax = max - 9;
+        return floor(gmax - gavg + gmax * (numTetrads-2));
+    }
     short gmax(){
-        return maxLength - (numTetrads * 4 + 1);
+      // Unlike the QGRS Mapper, this value is dynamically determined based 
+      // on the actual tetrad length of this motif.  This is logical, however
+      // it is inconsistent with what the mapper will output.
+      return maxLength - (numTetrads * 4 + 1);
     }
 
     short length() {
