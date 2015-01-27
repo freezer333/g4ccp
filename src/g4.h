@@ -65,15 +65,26 @@ public:
         sstr << "Start = " << start << ", numtetrads = " << numTetrads;
         return sstr.str();
     }
+
+    // This is an enhanced implementation of the original G-score, which
+    // dynamically assigns gmax based on tetrad length of the motif being
+    // constructed. It also divides loop sum by 3 instead of 2 (see below)
+    // - fixing a bug in the mapper calculation
     short score() {
         double gavg = (abs(y1-y2) + abs(y2-y3) + abs(y1-y3))/3.0;
         return floor(gmax() - gavg + gmax() * (numTetrads-2));
     }
+
+    // Note, this function has an apparent bug - it divides the loop 
+    // sum by 2 instead of 3.  This bug is present in the mapper code.
+    // It is left here for backwards compatibility.  This function
+    // really shouldn't be used in practice - its legacy.
     short score_mapper(short max) {
         double gavg = (abs(y1-y2) + abs(y2-y3) + abs(y1-y3))/2.0;
         short gmax = max - 9;
         return floor(gmax - gavg + gmax * (numTetrads-2));
     }
+    
     short gmax(){
       // Unlike the QGRS Mapper, this value is dynamically determined based 
       // on the actual tetrad length of this motif.  This is logical, however
